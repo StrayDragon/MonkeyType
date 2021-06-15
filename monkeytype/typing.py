@@ -7,6 +7,7 @@ from collections import defaultdict
 import inspect
 from itertools import chain
 import types
+import logging
 from abc import (
     ABC,
     abstractmethod,
@@ -66,8 +67,12 @@ def make_typed_dict(*, required_fields=None, optional_fields=None) -> type:
 
 def field_annotations(typed_dict) -> Tuple[Dict[str, type], Dict[str, type]]:
     """Return the required and optional fields in the TypedDict."""
-    return (typed_dict.__annotations__["required_fields"].__annotations__,
-            typed_dict.__annotations__["optional_fields"].__annotations__)
+    try:
+        return (typed_dict.__annotations__["required_fields"].__annotations__,
+                typed_dict.__annotations__["optional_fields"].__annotations__)
+    except Exception as e:
+        logging.debug(str(e))
+        return ({},{})
 
 
 def is_anonymous_typed_dict(typ: type) -> bool:
