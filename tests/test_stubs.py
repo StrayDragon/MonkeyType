@@ -150,8 +150,8 @@ def default_none_parameter(x: int = None) -> None:
 
 
 def has_length_exceeds_120_chars(
-    very_long_name_parameter_1: float,
-    very_long_name_parameter_2: float
+        very_long_name_parameter_1: float,
+        very_long_name_parameter_2: float
 ) -> Optional[float]:
     return None
 
@@ -206,6 +206,7 @@ class TestRenderAnnotation:
             (T, 'T'),
             (Dict[str, T], 'Dict[str, T]'),
             (Tuple[()], 'Tuple[()]'),
+            (Dict[str, Union[str, None]], "Dict[str, Optional[str]]"),
         ],
     )
     def test_render_annotation(self, annotation, expected):
@@ -355,7 +356,7 @@ class TestClassStub:
                                attribute_stubs=[
                                    AttributeStub('foo', int),
                                    AttributeStub('bar', str),
-                                ])
+                               ])
         expected = '\n'.join([
             'class Test:',
             '    bar: str',
@@ -416,79 +417,79 @@ class TestReplaceTypedDictsWithStubs:
             (List[List[Dict[str, int]]], (List[List[Dict[str, int]]], []),),
             (List[List[Dict[str, int]]], (List[List[Dict[str, int]]], []),),
             (
-                List[List[make_typed_dict(required_fields={'a': int, 'b': str})]],
-                (List[List[make_forward_ref('FooBarTypedDict__RENAME_ME__')]], [SIMPLE_TYPED_DICT_STUB]),
+                    List[List[make_typed_dict(required_fields={'a': int, 'b': str})]],
+                    (List[List[make_forward_ref('FooBarTypedDict__RENAME_ME__')]], [SIMPLE_TYPED_DICT_STUB]),
             ),
             (
-                Dict[str, make_typed_dict(required_fields={'a': int, 'b': str})],
-                (Dict[str, make_forward_ref('FooBar2TypedDict__RENAME_ME__')], [SIMPLE_TYPED_DICT_STUB2]),
+                    Dict[str, make_typed_dict(required_fields={'a': int, 'b': str})],
+                    (Dict[str, make_forward_ref('FooBar2TypedDict__RENAME_ME__')], [SIMPLE_TYPED_DICT_STUB2]),
             ),
             (
-                Set[make_typed_dict(required_fields={'a': int, 'b': str})],
-                (Set[make_forward_ref('FooBarTypedDict__RENAME_ME__')], [SIMPLE_TYPED_DICT_STUB]),
+                    Set[make_typed_dict(required_fields={'a': int, 'b': str})],
+                    (Set[make_forward_ref('FooBarTypedDict__RENAME_ME__')], [SIMPLE_TYPED_DICT_STUB]),
             ),
             (
-                Tuple[int, make_typed_dict(required_fields={'a': int, 'b': str})],
-                (Tuple[int, make_forward_ref('FooBar2TypedDict__RENAME_ME__')], [SIMPLE_TYPED_DICT_STUB2]),
+                    Tuple[int, make_typed_dict(required_fields={'a': int, 'b': str})],
+                    (Tuple[int, make_forward_ref('FooBar2TypedDict__RENAME_ME__')], [SIMPLE_TYPED_DICT_STUB2]),
             ),
             (
-                make_typed_dict(required_fields={'a': int, 'b': str}),
-                (make_forward_ref('FooBarTypedDict__RENAME_ME__'), [SIMPLE_TYPED_DICT_STUB]),
+                    make_typed_dict(required_fields={'a': int, 'b': str}),
+                    (make_forward_ref('FooBarTypedDict__RENAME_ME__'), [SIMPLE_TYPED_DICT_STUB]),
             ),
             (
-                make_typed_dict(optional_fields={'a': int, 'b': str}),
-                (make_forward_ref('FooBarTypedDict__RENAME_ME__'), [SIMPLE_NON_TOTAL_TYPED_DICT_STUB]),
+                    make_typed_dict(optional_fields={'a': int, 'b': str}),
+                    (make_forward_ref('FooBarTypedDict__RENAME_ME__'), [SIMPLE_NON_TOTAL_TYPED_DICT_STUB]),
             ),
             (
-                make_typed_dict(required_fields={'a': int, 'b': str}, optional_fields={'c': int}),
-                (make_forward_ref('FooBarTypedDict__RENAME_ME__NonTotal'), SIMPLE_BASE_AND_SUBCLASS),
+                    make_typed_dict(required_fields={'a': int, 'b': str}, optional_fields={'c': int}),
+                    (make_forward_ref('FooBarTypedDict__RENAME_ME__NonTotal'), SIMPLE_BASE_AND_SUBCLASS),
             ),
             (
-                TypedDict('GenuineTypedDict', {'a': int, 'b': str}),
-                (TypedDict('GenuineTypedDict', {'a': int, 'b': str}), []),
+                    TypedDict('GenuineTypedDict', {'a': int, 'b': str}),
+                    (TypedDict('GenuineTypedDict', {'a': int, 'b': str}), []),
             ),
             (
-                make_typed_dict(required_fields={
-                    'a': int,
-                    'b': make_typed_dict(required_fields={
+                    make_typed_dict(required_fields={
                         'a': int,
-                        'b': str
-                    })
-                }),
-                (make_forward_ref('FooBarTypedDict__RENAME_ME__'), [
-                    ClassStub(
-                        name='BTypedDict__RENAME_ME__(TypedDict)',
-                        function_stubs=[],
-                        attribute_stubs=[
-                            AttributeStub(name='a', typ=int),
-                            AttributeStub(name='b', typ=str),
-                        ]),
-                    ClassStub(
-                        name='FooBarTypedDict__RENAME_ME__(TypedDict)',
-                        function_stubs=[],
-                        attribute_stubs=[
-                            AttributeStub(name='a', typ=int),
-                            AttributeStub(name='b', typ=make_forward_ref('BTypedDict__RENAME_ME__')),
-                        ])
-                ]),
+                        'b': make_typed_dict(required_fields={
+                            'a': int,
+                            'b': str
+                        })
+                    }),
+                    (make_forward_ref('FooBarTypedDict__RENAME_ME__'), [
+                        ClassStub(
+                            name='BTypedDict__RENAME_ME__(TypedDict)',
+                            function_stubs=[],
+                            attribute_stubs=[
+                                AttributeStub(name='a', typ=int),
+                                AttributeStub(name='b', typ=str),
+                            ]),
+                        ClassStub(
+                            name='FooBarTypedDict__RENAME_ME__(TypedDict)',
+                            function_stubs=[],
+                            attribute_stubs=[
+                                AttributeStub(name='a', typ=int),
+                                AttributeStub(name='b', typ=make_forward_ref('BTypedDict__RENAME_ME__')),
+                            ])
+                    ]),
             ),
             (
-                Tuple[make_typed_dict(required_fields={'a': int}),
-                      make_typed_dict(required_fields={'b': str})],
-                (Tuple[make_forward_ref('FooBarTypedDict__RENAME_ME__'),
-                       make_forward_ref('FooBar2TypedDict__RENAME_ME__')],
-                 [ClassStub(
-                     name='FooBarTypedDict__RENAME_ME__(TypedDict)',
-                     function_stubs=[],
-                     attribute_stubs=[
-                         AttributeStub(name='a', typ=int),
-                     ]),
-                  ClassStub(
-                      name='FooBar2TypedDict__RENAME_ME__(TypedDict)',
-                      function_stubs=[],
-                      attribute_stubs=[
-                          AttributeStub(name='b', typ=str),
-                      ])]),
+                    Tuple[make_typed_dict(required_fields={'a': int}),
+                          make_typed_dict(required_fields={'b': str})],
+                    (Tuple[make_forward_ref('FooBarTypedDict__RENAME_ME__'),
+                           make_forward_ref('FooBar2TypedDict__RENAME_ME__')],
+                     [ClassStub(
+                         name='FooBarTypedDict__RENAME_ME__(TypedDict)',
+                         function_stubs=[],
+                         attribute_stubs=[
+                             AttributeStub(name='a', typ=int),
+                         ]),
+                         ClassStub(
+                             name='FooBar2TypedDict__RENAME_ME__(TypedDict)',
+                             function_stubs=[],
+                             attribute_stubs=[
+                                 AttributeStub(name='b', typ=str),
+                             ])]),
             ),
         ],
     )
@@ -1087,68 +1088,70 @@ class TestFunctionDefinition:
         [
             # Non-TypedDict case.
             (
-                Dummy.an_instance_method,
-                {'foo': int, 'bar': List[str]},
-                int,
-                None,
-                FunctionDefinition(
-                    'tests.util',
-                    'Dummy.an_instance_method',
-                    FunctionKind.INSTANCE,
-                    Signature(
-                        parameters=[
-                            Parameter(name='self', kind=Parameter.POSITIONAL_OR_KEYWORD, annotation=Parameter.empty),
-                            Parameter(name='foo', kind=Parameter.POSITIONAL_OR_KEYWORD, annotation=int),
-                            Parameter(name='bar', kind=Parameter.POSITIONAL_OR_KEYWORD, annotation=List[str]),
-                        ],
-                        return_annotation=int,
-                    ),
-                    False,
-                    [],
-                )
+                    Dummy.an_instance_method,
+                    {'foo': int, 'bar': List[str]},
+                    int,
+                    None,
+                    FunctionDefinition(
+                        'tests.util',
+                        'Dummy.an_instance_method',
+                        FunctionKind.INSTANCE,
+                        Signature(
+                            parameters=[
+                                Parameter(name='self', kind=Parameter.POSITIONAL_OR_KEYWORD,
+                                          annotation=Parameter.empty),
+                                Parameter(name='foo', kind=Parameter.POSITIONAL_OR_KEYWORD, annotation=int),
+                                Parameter(name='bar', kind=Parameter.POSITIONAL_OR_KEYWORD, annotation=List[str]),
+                            ],
+                            return_annotation=int,
+                        ),
+                        False,
+                        [],
+                    )
             ),
             # TypedDict: Add class definitions and use the class names as types.
             (
-                Dummy.an_instance_method,
-                {
-                    'foo': make_typed_dict(required_fields={'a': int, 'b': str}),
-                    'bar': make_typed_dict(required_fields={'c': int}),
-                },
-                int,
-                None,
-                FunctionDefinition(
-                    'tests.util',
-                    'Dummy.an_instance_method',
-                    FunctionKind.INSTANCE,
-                    Signature(
-                        parameters=[
-                            Parameter(name='self', kind=Parameter.POSITIONAL_OR_KEYWORD, annotation=Parameter.empty),
-                            Parameter(name='foo', kind=Parameter.POSITIONAL_OR_KEYWORD,
-                                      annotation=make_forward_ref('FooTypedDict__RENAME_ME__')),
-                            Parameter(name='bar', kind=Parameter.POSITIONAL_OR_KEYWORD,
-                                      annotation=make_forward_ref('BarTypedDict__RENAME_ME__')),
+                    Dummy.an_instance_method,
+                    {
+                        'foo': make_typed_dict(required_fields={'a': int, 'b': str}),
+                        'bar': make_typed_dict(required_fields={'c': int}),
+                    },
+                    int,
+                    None,
+                    FunctionDefinition(
+                        'tests.util',
+                        'Dummy.an_instance_method',
+                        FunctionKind.INSTANCE,
+                        Signature(
+                            parameters=[
+                                Parameter(name='self', kind=Parameter.POSITIONAL_OR_KEYWORD,
+                                          annotation=Parameter.empty),
+                                Parameter(name='foo', kind=Parameter.POSITIONAL_OR_KEYWORD,
+                                          annotation=make_forward_ref('FooTypedDict__RENAME_ME__')),
+                                Parameter(name='bar', kind=Parameter.POSITIONAL_OR_KEYWORD,
+                                          annotation=make_forward_ref('BarTypedDict__RENAME_ME__')),
+                            ],
+                            return_annotation=int,
+                        ),
+                        False,
+                        [
+                            ClassStub(
+                                name='FooTypedDict__RENAME_ME__(TypedDict)',
+                                function_stubs=[],
+                                attribute_stubs=[
+                                    AttributeStub('a', int),
+                                    AttributeStub('b', str),
+                                ]
+                            ),
+                            ClassStub(
+                                name='BarTypedDict__RENAME_ME__(TypedDict)',
+                                function_stubs=[],
+                                attribute_stubs=[
+                                    AttributeStub('c', int),
+                                ]
+                            ),
                         ],
-                        return_annotation=int,
-                    ),
-                    False,
-                    [
-                        ClassStub(
-                            name='FooTypedDict__RENAME_ME__(TypedDict)',
-                            function_stubs=[],
-                            attribute_stubs=[
-                                AttributeStub('a', int),
-                                AttributeStub('b', str),
-                            ]
-                        ),
-                        ClassStub(
-                            name='BarTypedDict__RENAME_ME__(TypedDict)',
-                            function_stubs=[],
-                            attribute_stubs=[
-                                AttributeStub('c', int),
-                            ]
-                        ),
-                    ],
-                )
+                    )
             ),
         ],
     )

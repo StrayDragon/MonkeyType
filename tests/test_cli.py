@@ -16,13 +16,12 @@ from typing import Iterator
 
 from unittest import mock
 
-
 from monkeytype import cli
 from monkeytype.config import DefaultConfig
 from monkeytype.db.sqlite import (
     create_call_trace_table,
     SQLiteStore,
-    )
+)
 from monkeytype.exceptions import MonkeyTypeError
 from monkeytype.tracing import CallTrace
 from monkeytype.typing import NoneType
@@ -52,11 +51,11 @@ def func_anno2(a: str, b: str) -> None:
 
 
 def super_long_function_with_long_params(
-    long_param1: str,
-    long_param2: str,
-    long_param3: str,
-    long_param4: str,
-    long_param5: str,
+        long_param1: str,
+        long_param2: str,
+        long_param3: str,
+        long_param4: str,
+        long_param5: str,
 ) -> None:
     pass
 
@@ -303,6 +302,7 @@ def test_toplevel_filename_parameter(store, db_file, stdout, stderr):
 
         def side_effect(x):
             return True if x == filename else orig_exists(x)
+
         with mock.patch('os.path.exists', side_effect=side_effect) as mock_exists:
             ret = cli.main(['stub', filename], stdout, stderr)
             mock_exists.assert_called_with(filename)
@@ -407,6 +407,82 @@ def test_apply_stub_using_libcst():
 
         def uses_union(d: Union[int, bool]) -> None:
           return None
+    """
+    assert cli.apply_stub_using_libcst(
+        textwrap.dedent(stub),
+        textwrap.dedent(source),
+        overwrite_existing_annotations=False,
+    ) == textwrap.dedent(expected)
+
+
+def test_apply_stub_using_libcst_2():
+    source = """
+        def f(a):
+            pass
+        
+        def my_test_function(a, b):
+            return True
+
+        def has_return_type(a, b) -> bool:
+            return True
+
+        def uses_forward_ref(d):
+            return None
+
+        def no_stub(a):
+            return True
+
+        def uses_union(d):
+            return None
+    """
+    stub = """
+        from some.dto import DTO
+        from mypy_extensions import TypedDict
+        from typing import Union
+        def f(a: DTO): ...
+        
+        def my_test_function(a: int, b: str) -> bool: ...
+
+        def has_return_type(a: int, b: int) -> bool: ...
+
+        def uses_forward_ref(d: 'Foo') -> None: ...
+
+        def uses_union(d: Union[int, bool]) -> None: ...
+
+        class Foo: ...
+
+        class Movie(TypedDict):
+            name: str
+            year: int
+    """
+    expected = """
+        from mypy_extensions import TypedDict
+        from some.dto import DTO
+        from typing import Union
+        
+        class Foo: ...
+        
+        class Movie(TypedDict):
+            name: str
+            year: int
+          
+        def f(a: DTO):
+            pass
+
+        def my_test_function(a: int, b: str) -> bool:
+            return True
+
+        def has_return_type(a: int, b: int) -> bool:
+            return True
+
+        def uses_forward_ref(d: 'Foo') -> None:
+            return None
+
+        def no_stub(a):
+            return True
+
+        def uses_union(d: Union[int, bool]) -> None:
+            return None
     """
     assert cli.apply_stub_using_libcst(
         textwrap.dedent(stub),

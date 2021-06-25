@@ -17,6 +17,8 @@ tox = "*"
 libcst = "*"
 dataclasses = "*"
 importlib_metadata = "*"
+pdir2 = "*"
+q = "*"
 
 [pipenv]
 keep_outdated = true

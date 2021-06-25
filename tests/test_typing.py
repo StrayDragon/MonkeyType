@@ -39,13 +39,12 @@ from monkeytype.typing import (
     TypeRewriter,
     DUMMY_OPTIONAL_TYPED_DICT_NAME,
     DUMMY_REQUIRED_TYPED_DICT_NAME,
-    DUMMY_TYPED_DICT_NAME,
+    DUMMY_TYPED_DICT_NAME, RewriteOptionableUnion,
 )
 
 from mypy_extensions import TypedDict
 
 from .util import Dummy
-
 
 VERY_LARGE_MAX_TYPED_DICT_SIZE = 200
 
@@ -119,11 +118,11 @@ class TestMakeTypedDict:
         'required_fields, optional_fields, expected_type',
         [
             (
-                {'a': int, 'b': str}, {'c': int},
-                TypedDict(DUMMY_TYPED_DICT_NAME, {
-                    'required_fields': TypedDict(DUMMY_REQUIRED_TYPED_DICT_NAME, {'a': int, 'b': str}),
-                    'optional_fields': TypedDict(DUMMY_OPTIONAL_TYPED_DICT_NAME, {'c': int}),
-                })
+                    {'a': int, 'b': str}, {'c': int},
+                    TypedDict(DUMMY_TYPED_DICT_NAME, {
+                        'required_fields': TypedDict(DUMMY_REQUIRED_TYPED_DICT_NAME, {'a': int, 'b': str}),
+                        'optional_fields': TypedDict(DUMMY_OPTIONAL_TYPED_DICT_NAME, {'c': int}),
+                    })
             ),
         ],
     )
@@ -149,147 +148,147 @@ class TestShrinkType:
         'types, expected_type',
         [
             (
-                (
+                    (
+                            make_typed_dict(required_fields={'a': int, 'b': int}),
+                            make_typed_dict(required_fields={'a': int, 'b': int}),
+                    ),
                     make_typed_dict(required_fields={'a': int, 'b': int}),
-                    make_typed_dict(required_fields={'a': int, 'b': int}),
-                ),
-                make_typed_dict(required_fields={'a': int, 'b': int}),
             ),
             (
-                (
-                    make_typed_dict(required_fields={'a': int, 'b': int}),
-                    make_typed_dict(required_fields={'a': int}),
-                ),
-                make_typed_dict(required_fields={'a': int}, optional_fields={'b': int}),
+                    (
+                            make_typed_dict(required_fields={'a': int, 'b': int}),
+                            make_typed_dict(required_fields={'a': int}),
+                    ),
+                    make_typed_dict(required_fields={'a': int}, optional_fields={'b': int}),
             ),
             (
-                (
-                    make_typed_dict(required_fields={'a': int, 'b': int}),
-                    make_typed_dict(required_fields={'a': int, 'c': int}),
-                ),
-                make_typed_dict(required_fields={'a': int}, optional_fields={'b': int, 'c': int}),
+                    (
+                            make_typed_dict(required_fields={'a': int, 'b': int}),
+                            make_typed_dict(required_fields={'a': int, 'c': int}),
+                    ),
+                    make_typed_dict(required_fields={'a': int}, optional_fields={'b': int, 'c': int}),
             ),
             (
-                (
-                    make_typed_dict(required_fields={'a': str}),
-                    make_typed_dict(required_fields={'a': int}),
-                ),
-                make_typed_dict(required_fields={'a': Union[str, int]}, optional_fields={}),
+                    (
+                            make_typed_dict(required_fields={'a': str}),
+                            make_typed_dict(required_fields={'a': int}),
+                    ),
+                    make_typed_dict(required_fields={'a': Union[str, int]}, optional_fields={}),
             ),
             (
-                (
-                    make_typed_dict(required_fields={'a': str}),
-                    make_typed_dict(required_fields={'a': int}),
-                    make_typed_dict(required_fields={'b': int}),
-                ),
-                make_typed_dict(required_fields={}, optional_fields={'a': Union[str, int], 'b': int}),
+                    (
+                            make_typed_dict(required_fields={'a': str}),
+                            make_typed_dict(required_fields={'a': int}),
+                            make_typed_dict(required_fields={'b': int}),
+                    ),
+                    make_typed_dict(required_fields={}, optional_fields={'a': Union[str, int], 'b': int}),
             ),
             # Cases where the input TypedDict has optional fields.
             (
-                (
+                    (
+                            make_typed_dict(optional_fields={'a': int, 'b': int}),
+                            make_typed_dict(optional_fields={'a': int, 'b': int}),
+                    ),
                     make_typed_dict(optional_fields={'a': int, 'b': int}),
-                    make_typed_dict(optional_fields={'a': int, 'b': int}),
-                ),
-                make_typed_dict(optional_fields={'a': int, 'b': int}),
             ),
             (
-                (
-                    make_typed_dict(optional_fields={'a': int, 'b': int}),
-                    make_typed_dict(optional_fields={'a': int, 'c': int}),
-                ),
-                make_typed_dict(optional_fields={'a': int, 'b': int, 'c': int}),
+                    (
+                            make_typed_dict(optional_fields={'a': int, 'b': int}),
+                            make_typed_dict(optional_fields={'a': int, 'c': int}),
+                    ),
+                    make_typed_dict(optional_fields={'a': int, 'b': int, 'c': int}),
             ),
             (
-                (
+                    (
+                            make_typed_dict(optional_fields={'a': str}),
+                            make_typed_dict(optional_fields={'a': int}),
+                    ),
+                    make_typed_dict(optional_fields={'a': Union[str, int]}),
+            ),
+            (
+                    (
+                            make_typed_dict(optional_fields={'a': str}),
+                            make_typed_dict(optional_fields={'b': int}),
+                    ),
+                    make_typed_dict(optional_fields={'a': str, 'b': int}),
+            ),
+            (
+                    (
+                            make_typed_dict(required_fields={'a': str}),
+                            make_typed_dict(optional_fields={'a': str}),
+                    ),
                     make_typed_dict(optional_fields={'a': str}),
-                    make_typed_dict(optional_fields={'a': int}),
-                ),
-                make_typed_dict(optional_fields={'a': Union[str, int]}),
-            ),
-            (
-                (
-                    make_typed_dict(optional_fields={'a': str}),
-                    make_typed_dict(optional_fields={'b': int}),
-                ),
-                make_typed_dict(optional_fields={'a': str, 'b': int}),
-            ),
-            (
-                (
-                    make_typed_dict(required_fields={'a': str}),
-                    make_typed_dict(optional_fields={'a': str}),
-                ),
-                make_typed_dict(optional_fields={'a': str}),
             ),
             # The shrunk TypedDict is too large, so fall back to Dict.
             (
-                (
-                    make_typed_dict(required_fields={'a1': int}),
-                    make_typed_dict(required_fields={'a2': int}),
-                    make_typed_dict(required_fields={'a3': int}),
-                    make_typed_dict(required_fields={'a4': int}),
-                    make_typed_dict(required_fields={'a5': int}),
-                    make_typed_dict(required_fields={'a6': int}),
-                    make_typed_dict(required_fields={'a7': int}),
-                    make_typed_dict(required_fields={'a8': int}),
-                    make_typed_dict(required_fields={'a9': int}),
-                    make_typed_dict(required_fields={'a10': int}),
-                    make_typed_dict(required_fields={'a11': int}),
-                ),
-                Dict[str, int],
+                    (
+                            make_typed_dict(required_fields={'a1': int}),
+                            make_typed_dict(required_fields={'a2': int}),
+                            make_typed_dict(required_fields={'a3': int}),
+                            make_typed_dict(required_fields={'a4': int}),
+                            make_typed_dict(required_fields={'a5': int}),
+                            make_typed_dict(required_fields={'a6': int}),
+                            make_typed_dict(required_fields={'a7': int}),
+                            make_typed_dict(required_fields={'a8': int}),
+                            make_typed_dict(required_fields={'a9': int}),
+                            make_typed_dict(required_fields={'a10': int}),
+                            make_typed_dict(required_fields={'a11': int}),
+                    ),
+                    Dict[str, int],
             ),
             (
-                (
-                    make_typed_dict(required_fields={'a1': int, 'a2': int, 'a3': int, 'a4': int, 'a5': int}),
-                    make_typed_dict(required_fields={'a6': int, 'a7': int, 'a8': int, 'a9': int, 'a10': int}),
-                    make_typed_dict(required_fields={'a11': int}),
-                ),
-                Dict[str, int],
+                    (
+                            make_typed_dict(required_fields={'a1': int, 'a2': int, 'a3': int, 'a4': int, 'a5': int}),
+                            make_typed_dict(required_fields={'a6': int, 'a7': int, 'a8': int, 'a9': int, 'a10': int}),
+                            make_typed_dict(required_fields={'a11': int}),
+                    ),
+                    Dict[str, int],
             ),
             # Nested TypedDict.
             (
-                (
+                    (
+                            make_typed_dict(required_fields={
+                                'foo': make_typed_dict(required_fields={
+                                    'a': int,
+                                    'b': str
+                                }),
+                            }),
+                            make_typed_dict(required_fields={
+                                'foo': make_typed_dict(required_fields={
+                                    'a': int,
+                                    'b': str
+                                }),
+                            }),
+                    ),
                     make_typed_dict(required_fields={
                         'foo': make_typed_dict(required_fields={
                             'a': int,
                             'b': str
                         }),
                     }),
-                    make_typed_dict(required_fields={
-                        'foo': make_typed_dict(required_fields={
-                            'a': int,
-                            'b': str
-                        }),
-                    }),
-                ),
-                make_typed_dict(required_fields={
-                    'foo': make_typed_dict(required_fields={
-                        'a': int,
-                        'b': str
-                    }),
-                }),
             ),
             # Nested TypedDict with differing types.
             (
-                (
+                    (
+                            make_typed_dict(required_fields={
+                                'foo': make_typed_dict(required_fields={
+                                    'a': int,
+                                    'b': str
+                                }),
+                            }),
+                            make_typed_dict(required_fields={
+                                'foo': make_typed_dict(required_fields={
+                                    'a': str,
+                                }),
+                            }),
+                    ),
                     make_typed_dict(required_fields={
                         'foo': make_typed_dict(required_fields={
-                            'a': int,
-                            'b': str
+                            'a': Union[int, str],
+                        }, optional_fields={
+                            'b': str,
                         }),
                     }),
-                    make_typed_dict(required_fields={
-                        'foo': make_typed_dict(required_fields={
-                            'a': str,
-                        }),
-                    }),
-                ),
-                make_typed_dict(required_fields={
-                    'foo': make_typed_dict(required_fields={
-                        'a': Union[int, str],
-                    }, optional_fields={
-                        'b': str,
-                    }),
-                }),
             ),
         ],
     )
@@ -302,85 +301,86 @@ class TestShrinkType:
         [
             # Sanity-check that it works for primitive types.
             (
-                (int, str), Union[int, str],
+                    (int, str), Union[int, str],
             ),
             # Non-TypedDict type with just one trace.
             (
-                (
+                    (
+                            List[make_typed_dict(required_fields={'a': int})],
+                    ),
                     List[make_typed_dict(required_fields={'a': int})],
-                ),
-                List[make_typed_dict(required_fields={'a': int})],
             ),
             # Same non-TypedDict types.
             (
-                (
+                    (
+                            List[make_typed_dict(required_fields={'a': int})],
+                            List[make_typed_dict(required_fields={'a': int})],
+                    ),
                     List[make_typed_dict(required_fields={'a': int})],
-                    List[make_typed_dict(required_fields={'a': int})],
-                ),
-                List[make_typed_dict(required_fields={'a': int})],
             ),
             # Non-TypedDict types but not all the same - convert anonymous TypedDicts to Dicts.
             (
-                (
-                    List[make_typed_dict(required_fields={'a': int})],
+                    (
+                            List[make_typed_dict(required_fields={'a': int})],
+                            List[Dict[str, int]],
+                    ),
                     List[Dict[str, int]],
-                ),
-                List[Dict[str, int]],
             ),
             (
-                (
-                    List[make_typed_dict(required_fields={'a': int})],
-                    List[make_typed_dict(required_fields={'b': int})],
-                ),
-                List[make_typed_dict(optional_fields={'a': int, 'b': int})],
+                    (
+                            List[make_typed_dict(required_fields={'a': int})],
+                            List[make_typed_dict(required_fields={'b': int})],
+                    ),
+                    List[make_typed_dict(optional_fields={'a': int, 'b': int})],
             ),
             (
-                (
+                    (
+                            make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'a': int})]}),
+                            make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'a': int})]}),
+                    ),
                     make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'a': int})]}),
-                    make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'a': int})]}),
-                ),
-                make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'a': int})]}),
             ),
             (
-                (
-                    make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'a': int})]}),
-                    make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'b': int})]}),
-                ),
-                make_typed_dict(required_fields={"foo": List[make_typed_dict(optional_fields={'a': int, 'b': int})]}),
+                    (
+                            make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'a': int})]}),
+                            make_typed_dict(required_fields={"foo": List[make_typed_dict(required_fields={'b': int})]}),
+                    ),
+                    make_typed_dict(
+                        required_fields={"foo": List[make_typed_dict(optional_fields={'a': int, 'b': int})]}),
             ),
             (
-                (
+                    (
+                            typing_Tuple[make_typed_dict(required_fields={'a': int})],
+                            typing_Tuple[make_typed_dict(required_fields={'a': int})],
+                    ),
                     typing_Tuple[make_typed_dict(required_fields={'a': int})],
-                    typing_Tuple[make_typed_dict(required_fields={'a': int})],
-                ),
-                typing_Tuple[make_typed_dict(required_fields={'a': int})],
             ),
             # We don't currently shrink the inner types for Tuples.
             (
-                (
-                    typing_Tuple[make_typed_dict(required_fields={'a': int})],
-                    typing_Tuple[make_typed_dict(required_fields={'b': int})],
-                ),
-                typing_Tuple[Dict[str, int]],
+                    (
+                            typing_Tuple[make_typed_dict(required_fields={'a': int})],
+                            typing_Tuple[make_typed_dict(required_fields={'b': int})],
+                    ),
+                    typing_Tuple[Dict[str, int]],
             ),
             # Fall back to Dict when the resulting TypedDict would be too large.
             # Keep any nested anonymous TypedDicts, though.
             (
-                (
-                    make_typed_dict(required_fields={'a1': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a2': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a3': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a4': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a5': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a6': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a7': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a8': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a9': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a10': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a11': make_typed_dict(required_fields={'b': str})}),
-                    make_typed_dict(required_fields={'a11': make_typed_dict(required_fields={'c': int})}),
-                ),
-                Dict[str, make_typed_dict(optional_fields={'b': str, 'c': int})],
+                    (
+                            make_typed_dict(required_fields={'a1': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a2': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a3': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a4': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a5': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a6': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a7': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a8': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a9': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a10': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a11': make_typed_dict(required_fields={'b': str})}),
+                            make_typed_dict(required_fields={'a11': make_typed_dict(required_fields={'c': int})}),
+                    ),
+                    Dict[str, make_typed_dict(optional_fields={'b': str, 'c': int})],
             ),
         ],
     )
@@ -407,27 +407,27 @@ class TestShrinkType:
         [
             # If all are anonymous TypedDicts, we get the shrunk TypedDict.
             (
-                (
+                    (
+                            make_typed_dict(required_fields={'a': int, 'b': int}),
+                            make_typed_dict(required_fields={'a': int, 'b': int}),
+                    ),
                     make_typed_dict(required_fields={'a': int, 'b': int}),
-                    make_typed_dict(required_fields={'a': int, 'b': int}),
-                ),
-                make_typed_dict(required_fields={'a': int, 'b': int}),
             ),
             # If not all are anonymous TypedDicts, we get the Dict equivalents.
             (
-                (
-                    make_typed_dict(required_fields={'a': int, 'b': int}),
-                    Dict[int, int]
-                ),
-                Union[Dict[str, int], Dict[int, int]],
+                    (
+                            make_typed_dict(required_fields={'a': int, 'b': int}),
+                            Dict[int, int]
+                    ),
+                    Union[Dict[str, int], Dict[int, int]],
             ),
             # If not all are anonymous TypedDicts, we convert any nested TypedDicts to Dicts as well.
             (
-                (
-                    make_typed_dict(required_fields={'a': make_typed_dict(required_fields={'b': int})}),
-                    Dict[str, int]
-                ),
-                Union[Dict[str, Dict[str, int]], Dict[str, int]],
+                    (
+                            make_typed_dict(required_fields={'a': make_typed_dict(required_fields={'b': int})}),
+                            Dict[str, int]
+                    ),
+                    Union[Dict[str, Dict[str, int]], Dict[str, int]],
             ),
         ],
     )
@@ -452,40 +452,40 @@ class TestTypedDictHelpers:
         'type1, type2, expected_value',
         [
             (
-                TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
-                TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
-                True,
+                    TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
+                    TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
+                    True,
             ),
             (
-                TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}, total=False),
-                TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
-                False,
+                    TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}, total=False),
+                    TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
+                    False,
             ),
             (
-                TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
-                Dict[str, int],
-                False,
+                    TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
+                    Dict[str, int],
+                    False,
             ),
             (
-                Dict[str, int],
-                TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
-                False,
+                    Dict[str, int],
+                    TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': int}),
+                    False,
             ),
             (Dict[str, int], Dict[str, int], True),
             # Recursive equality checks.
             (
-                TypedDict(DUMMY_TYPED_DICT_NAME,
-                          {'a': TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': str})}),
-                TypedDict(DUMMY_TYPED_DICT_NAME,
-                          {'a': TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': str})}),
-                True,
+                    TypedDict(DUMMY_TYPED_DICT_NAME,
+                              {'a': TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': str})}),
+                    TypedDict(DUMMY_TYPED_DICT_NAME,
+                              {'a': TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': str})}),
+                    True,
             ),
             (
-                TypedDict(DUMMY_TYPED_DICT_NAME,
-                          {'a': TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': str})}),
-                TypedDict(DUMMY_TYPED_DICT_NAME,
-                          {'a': TypedDict(DUMMY_TYPED_DICT_NAME, {'a': str, 'b': str})}),
-                False,
+                    TypedDict(DUMMY_TYPED_DICT_NAME,
+                              {'a': TypedDict(DUMMY_TYPED_DICT_NAME, {'a': int, 'b': str})}),
+                    TypedDict(DUMMY_TYPED_DICT_NAME,
+                              {'a': TypedDict(DUMMY_TYPED_DICT_NAME, {'a': str, 'b': str})}),
+                    False,
             ),
         ],
     )
@@ -561,11 +561,11 @@ class TestGetType:
              DefaultDict[int, DefaultDict[int, float]],
              DefaultDict[int, DefaultDict[int, float]]),
             ({
-                'foo': {
-                    'a': 1,
-                    'b': "hello"
-                }
-            },
+                 'foo': {
+                     'a': 1,
+                     'b': "hello"
+                 }
+             },
              Dict[str, Dict[str, Union[str, int]]],
              make_typed_dict(required_fields={
                  'foo': make_typed_dict(required_fields={
@@ -608,11 +608,11 @@ class TestGetType:
         [
             ({'a': 1, 'b': 2}, 1, Dict[str, int]),
             ({
-                'foo': {
-                    'a': 1,
-                    'b': "hello"
-                }
-            }, 1,
+                 'foo': {
+                     'a': 1,
+                     'b': "hello"
+                 }
+             }, 1,
              make_typed_dict(required_fields={'foo': Dict[str, Union[str, int]]})),
         ]
     )
@@ -638,6 +638,7 @@ T = TypeVar("T")
 
 class RewriteListToInt(TypeRewriter):
     """Dummy rewriter for testing."""
+
     def rewrite_List(self, lst):
         return int
 
@@ -675,8 +676,8 @@ class TestRemoveEmptyContainers:
             (Union[Set[Any], Set[int]], Set[int]),
             (Union[Dict[Any, Any], Dict[int, int]], Dict[int, int]),
             (
-                Union[Set[Any], Set[int], Dict[int, str]],
-                Union[Set[int], Dict[int, str]],
+                    Union[Set[Any], Set[int], Dict[int, str]],
+                    Union[Set[int], Dict[int, str]],
             ),
             (Union[str, int], Union[str, int]),
             (Dict[str, Union[List[str], List[Any]]], Dict[str, List[str]]),
@@ -690,28 +691,53 @@ class TestRemoveEmptyContainers:
         assert rewritten == expected
 
 
+class TestRewriteOptionableUnion:
+    class A: ...
+
+    class B: ...
+
+    @pytest.mark.parametrize(
+        'typ, expected',
+        [
+
+            (Union[A, B, None], Union[A, B, None]),
+            (Union[A, None], Optional[A]),
+            (Union[Union[A, None], None], Optional[A]),
+            (Union[Union[A, None], B], Union[Optional[A], B]),
+            (Union[Union[A, None], B], Union[Optional[A], B]),
+            #
+            (Dict[str, Union[A, B, None]], Dict[str, Union[A, B, None]]),
+            (Dict[str, Union[A, None]], Dict[str, Optional[A]]),
+
+        ],
+    )
+    def test_rewrite(self, typ, expected):
+        rewritten = RewriteOptionableUnion().rewrite(typ)
+        assert rewritten == expected
+
+
 class TestRewriteConfigDict:
     @pytest.mark.parametrize(
         'typ,expected',
         [
             # Not all dictionaries; shouldn't rewrite
             (
-                Union[Dict[str, int], List[str]],
-                Union[Dict[str, int], List[str]],
+                    Union[Dict[str, int], List[str]],
+                    Union[Dict[str, int], List[str]],
             ),
             # Not the same key type; shouldn't rewrite
             (
-                Union[Dict[str, int], Dict[int, int]],
-                Union[Dict[str, int], Dict[int, int]],
+                    Union[Dict[str, int], Dict[int, int]],
+                    Union[Dict[str, int], Dict[int, int]],
             ),
             # Should rewrite
             (
-                Union[
-                    Dict[str, int],
-                    Dict[str, str],
-                    Dict[str, Union[int, str]]
-                ],
-                Dict[str, Union[int, str]],
+                    Union[
+                        Dict[str, int],
+                        Dict[str, str],
+                        Dict[str, Union[int, str]]
+                    ],
+                    Dict[str, Union[int, str]],
             ),
         ],
     )
@@ -758,26 +784,26 @@ class TestRewriteLargeUnion:
             (Union[typing_Tuple[int, int], List[int], typing_Tuple[int]], Any),
             # Not the same value type for all tuples; should rewrite to Any
             (
-                Union[
-                    typing_Tuple[int, str], typing_Tuple[int, int], typing_Tuple[int]
-                ],
-                Any,
+                    Union[
+                        typing_Tuple[int, str], typing_Tuple[int, int], typing_Tuple[int]
+                    ],
+                    Any,
             ),
             # Should rewrite to Tuple[int, ...]
             (
-                Union[
-                    typing_Tuple[int, int],
-                    typing_Tuple[int, int, int],
-                    typing_Tuple[int],
-                ],
-                typing_Tuple[int, ...],
+                    Union[
+                        typing_Tuple[int, int],
+                        typing_Tuple[int, int, int],
+                        typing_Tuple[int],
+                    ],
+                    typing_Tuple[int, ...],
             ),
             # Should rewrite to Tuple[G, ...]
             (
-                Union[
-                    typing_Tuple[G, G], typing_Tuple[G, G, G], typing_Tuple[G]
-                ],
-                typing_Tuple[G, ...],
+                    Union[
+                        typing_Tuple[G, G], typing_Tuple[G, G, G], typing_Tuple[G]
+                    ],
+                    typing_Tuple[G, ...],
             ),
             (Union[B, D, E], B),
             (Union[D, E, F, G], A),

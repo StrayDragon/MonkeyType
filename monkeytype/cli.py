@@ -15,7 +15,6 @@ import sys
 
 from libcst import parse_module
 from libcst.codemod import CodemodContext
-from libcst.codemod.visitors import ApplyTypeAnnotationsVisitor
 from pathlib import Path
 from typing import (
     IO,
@@ -28,6 +27,7 @@ from typing import (
 from monkeytype import trace
 from monkeytype.config import Config
 from monkeytype.exceptions import MonkeyTypeError
+from monkeytype.libcstx.codemod.visitors import ApplyTypeAnnotationsVisitor
 from monkeytype.stubs import (
     ExistingAnnotationStrategy,
     Stub,
