@@ -424,18 +424,7 @@ class ApplyTypeAnnotationsVisitor(ContextAwareTransformer):
         if statements[0].leading_lines[0].comment is None:
             # First line is empty, so its safe to leave as-is
             return statements
-        Statement
-        has
-        a
-        comment
-        first
-        line, so
-        lets
-        add
-        one
-        more
-        empty
-        line
+        # Statement has a comment first line, so lets add one more empty line
         return [
             statements[0].with_changes(
                 leading_lines=(cst.EmptyLine(), *statements[0].leading_lines)

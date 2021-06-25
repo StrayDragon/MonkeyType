@@ -37,12 +37,10 @@ from monkeytype.compat import (
 from monkeytype.typing import field_annotations
 from monkeytype.util import pascal_case
 
-
 try:
     from django.utils.functional import cached_property  # type: ignore
 except ImportError:
     cached_property = None
-
 
 from monkeytype.tracing import (
     CallTrace,
@@ -58,7 +56,6 @@ from monkeytype.typing import (
     shrink_types,
 )
 from monkeytype.util import get_name_in_module
-
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +100,7 @@ class ExistingAnnotationStrategy(enum.Enum):
 
 class ImportMap(collections.defaultdict):
     """A mapping of module name to the set of names to be imported."""
+
     def __init__(self) -> None:
         super().__init__(set)
 
@@ -164,10 +162,10 @@ def get_imports_for_signature(sig: inspect.Signature) -> ImportMap:
 
 
 def update_signature_args(
-    sig: inspect.Signature,
-    arg_types: Dict[str, type],
-    has_self: bool,
-    existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
+        sig: inspect.Signature,
+        arg_types: Dict[str, type],
+        has_self: bool,
+        existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
 ) -> inspect.Signature:
     """Update argument annotations with the supplied types"""
     params = []
@@ -190,10 +188,10 @@ def update_signature_args(
 
 
 def update_signature_return(
-    sig: inspect.Signature,
-    return_type: type = None,
-    yield_type: type = None,
-    existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
+        sig: inspect.Signature,
+        return_type: type = None,
+        yield_type: type = None,
+        existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
 ) -> inspect.Signature:
     """Update return annotation with the supplied types"""
     anno = sig.return_annotation
@@ -219,8 +217,8 @@ def update_signature_return(
 
 
 def shrink_traced_types(
-    traces: Iterable[CallTrace],
-    max_typed_dict_size: int,
+        traces: Iterable[CallTrace],
+        max_typed_dict_size: int,
 ) -> Tuple[Dict[str, type], Optional[type], Optional[type]]:
     """Merges the traced types and returns the minimally equivalent types"""
     arg_types: DefaultDict[str, Set[type]] = collections.defaultdict(set)
@@ -284,8 +282,8 @@ def _is_optional(anno: Any) -> bool:
     Optional isn't really a type. It's an alias to Union[T, NoneType]
     """
     return (
-        is_union(anno) and
-        NoneType in anno.__args__
+            is_union(anno) and
+            NoneType in anno.__args__
     )
 
 
@@ -303,10 +301,14 @@ class RenderAnnotation(GenericTypeRewriter[str]):
     """Render annotation recursively."""
 
     def make_anonymous_typed_dict(self, required_fields: Dict[str, str], optional_fields: Dict[str, str]) -> str:
+        from rich import inspect
+        inspect(self, all=True)
         raise Exception("Should not receive an anonymous TypedDict in RenderAnnotation,"
                         f" but was called with required_fields={required_fields}, optional_fields={optional_fields}.")
 
     def make_builtin_typed_dict(self, name: str, annotations: Dict[str, str], total: bool) -> str:
+        from rich import inspect
+        inspect(self, all=True)
         raise Exception("Should not receive a TypedDict type in RenderAnnotation,"
                         f" but was called with name={name}, annotations={annotations}, total={total}.")
 
@@ -398,9 +400,9 @@ def render_parameter(param: inspect.Parameter) -> str:
 
 
 def render_signature(
-    sig: inspect.Signature,
-    max_line_len: Optional[int] = None,
-    prefix: str = ''
+        sig: inspect.Signature,
+        max_line_len: Optional[int] = None,
+        prefix: str = ''
 ) -> str:
     """Convert a signature into its stub representation.
 
@@ -468,9 +470,9 @@ def render_signature(
 
 class AttributeStub(Stub):
     def __init__(
-        self,
-        name: str,
-        typ: type,
+            self,
+            name: str,
+            typ: type,
     ) -> None:
         self.name = name
         self.typ = typ
@@ -524,10 +526,10 @@ class FunctionStub(Stub):
 
 class ClassStub(Stub):
     def __init__(
-        self,
-        name: str,
-        function_stubs: Iterable[FunctionStub] = None,
-        attribute_stubs: Iterable[AttributeStub] = None,
+            self,
+            name: str,
+            function_stubs: Iterable[FunctionStub] = None,
+            attribute_stubs: Iterable[AttributeStub] = None,
     ) -> None:
         self.name = name
         self.function_stubs: Dict[str, FunctionStub] = {}
@@ -672,13 +674,13 @@ class FunctionDefinition:
     }
 
     def __init__(
-        self,
-        module: str,
-        qualname: str,
-        kind: FunctionKind,
-        sig: inspect.Signature,
-        is_async: bool = False,
-        typed_dict_class_stubs: Iterable[ClassStub] = None,
+            self,
+            module: str,
+            qualname: str,
+            kind: FunctionKind,
+            sig: inspect.Signature,
+            is_async: bool = False,
+            typed_dict_class_stubs: Iterable[ClassStub] = None,
     ) -> None:
         self.module = module
         self.qualname = qualname
@@ -696,12 +698,12 @@ class FunctionDefinition:
 
     @classmethod
     def from_callable_and_traced_types(
-        cls,
-        func: Callable,
-        arg_types: Dict[str, type],
-        return_type: Optional[type],
-        yield_type: Optional[type],
-        existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
+            cls,
+            func: Callable,
+            arg_types: Dict[str, type],
+            return_type: Optional[type],
+            yield_type: Optional[type],
+            existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
     ) -> 'FunctionDefinition':
         typed_dict_class_stubs: List[ClassStub] = []
         new_arg_types = {}
@@ -749,11 +751,11 @@ class FunctionDefinition:
 
 
 def get_updated_definition(
-    func: Callable,
-    traces: Iterable[CallTrace],
-    max_typed_dict_size: int,
-    rewriter: Optional[TypeRewriter] = None,
-    existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
+        func: Callable,
+        traces: Iterable[CallTrace],
+        max_typed_dict_size: int,
+        rewriter: Optional[TypeRewriter] = None,
+        existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
 ) -> FunctionDefinition:
     """Update the definition for func using the types collected in traces."""
     if rewriter is None:
@@ -804,10 +806,10 @@ def build_module_stubs(entries: Iterable[FunctionDefinition]) -> Dict[str, Modul
 
 
 def build_module_stubs_from_traces(
-    traces: Iterable[CallTrace],
-    max_typed_dict_size: int,
-    existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
-    rewriter: Optional[TypeRewriter] = None,
+        traces: Iterable[CallTrace],
+        max_typed_dict_size: int,
+        existing_annotation_strategy: ExistingAnnotationStrategy = ExistingAnnotationStrategy.REPLICATE,
+        rewriter: Optional[TypeRewriter] = None,
 ) -> Dict[str, ModuleStub]:
     """Given an iterable of call traces, build the corresponding stubs."""
     index: DefaultDict[Callable, Set[CallTrace]] = collections.defaultdict(set)

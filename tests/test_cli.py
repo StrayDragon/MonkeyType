@@ -340,6 +340,7 @@ def my_test_function(a, b):
         with open(src_path, 'w+') as f:
             f.write(src)
         with mock.patch('sys.path', sys.path + [tempdir]):
+            # noinspection PyUnresolvedReferences
             import my_test_module as mtm
             traces = [CallTrace(mtm.my_test_function, {'a': int, 'b': str}, NoneType)]
             store.add(traces)
@@ -417,8 +418,10 @@ def test_apply_stub_using_libcst():
 
 def test_apply_stub_using_libcst_2():
     source = """
+        from some.dao.concrete_dao import DAO
+        
         def f(a):
-            pass
+            return DAO(id=a.id,text=a.txt).save()
         
         def my_test_function(a, b):
             return True
@@ -436,10 +439,10 @@ def test_apply_stub_using_libcst_2():
             return None
     """
     stub = """
-        from some.dto import DTO
+        from some.dao.concrete_dao import DAO
         from mypy_extensions import TypedDict
         from typing import Union
-        def f(a: DTO): ...
+        def f(a: DAO): ...
         
         def my_test_function(a: int, b: str) -> bool: ...
 
@@ -457,7 +460,7 @@ def test_apply_stub_using_libcst_2():
     """
     expected = """
         from mypy_extensions import TypedDict
-        from some.dto import DTO
+        from some.dao.concrete_dao import DAO
         from typing import Union
         
         class Foo: ...
@@ -466,7 +469,7 @@ def test_apply_stub_using_libcst_2():
             name: str
             year: int
           
-        def f(a: DTO):
+        def f(a: DAO):
             pass
 
         def my_test_function(a: int, b: str) -> bool:
@@ -484,6 +487,11 @@ def test_apply_stub_using_libcst_2():
         def uses_union(d: Union[int, bool]) -> None:
             return None
     """
+    print(cli.apply_stub_using_libcst(
+        textwrap.dedent(stub),
+        textwrap.dedent(source),
+        overwrite_existing_annotations=False,
+    ))
     assert cli.apply_stub_using_libcst(
         textwrap.dedent(stub),
         textwrap.dedent(source),

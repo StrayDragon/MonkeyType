@@ -61,7 +61,7 @@ class AddImportsVisitor(ContextAwareTransformer):
 
     @staticmethod
     def _get_imports_from_context(
-        context: CodemodContext,
+            context: CodemodContext,
     ) -> List[Tuple[str, Optional[str], Optional[str]]]:
         imports = context.scratch.get(AddImportsVisitor.CONTEXT_KEY, [])
         if not isinstance(imports, list):
@@ -70,10 +70,10 @@ class AddImportsVisitor(ContextAwareTransformer):
 
     @staticmethod
     def add_needed_import(
-        context: CodemodContext,
-        module: str,
-        obj: Optional[str] = None,
-        asname: Optional[str] = None,
+            context: CodemodContext,
+            module: str,
+            obj: Optional[str] = None,
+            asname: Optional[str] = None,
     ) -> None:
         """
         Schedule an import to be added in a future invocation of this class by
@@ -99,9 +99,9 @@ class AddImportsVisitor(ContextAwareTransformer):
         context.scratch[AddImportsVisitor.CONTEXT_KEY] = imports
 
     def __init__(
-        self,
-        context: CodemodContext,
-        imports: Sequence[Tuple[str, Optional[str], Optional[str]]] = (),
+            self,
+            context: CodemodContext,
+            imports: Sequence[Tuple[str, Optional[str], Optional[str]]] = (),
     ) -> None:
         # Allow for instantiation from either a context (used when multiple transforms
         # get chained) or from a direct instantiation.
@@ -177,8 +177,7 @@ class AddImportsVisitor(ContextAwareTransformer):
         for module, aliases in gatherer.alias_mapping.items():
             for (obj, alias) in aliases:
                 if (
-                    module in self.alias_mapping
-                    and (obj, alias) in self.alias_mapping[module]
+                        module in self.alias_mapping and (obj, alias) in self.alias_mapping[module]
                 ):
                     self.alias_mapping[module].remove((obj, alias))
                     if len(self.alias_mapping[module]) == 0:
@@ -199,7 +198,7 @@ class AddImportsVisitor(ContextAwareTransformer):
                     del self.module_mapping[module]
 
     def leave_ImportFrom(
-        self, original_node: libcst.ImportFrom, updated_node: libcst.ImportFrom
+            self, original_node: libcst.ImportFrom, updated_node: libcst.ImportFrom
     ) -> libcst.ImportFrom:
         if isinstance(updated_node.names, libcst.ImportStar):
             # There's nothing to do here!
@@ -210,9 +209,9 @@ class AddImportsVisitor(ContextAwareTransformer):
             self.context.full_module_name, updated_node
         )
         if (
-            module is None
-            or module not in self.module_mapping
-            and module not in self.alias_mapping
+                module is None
+                or module not in self.module_mapping
+                and module not in self.alias_mapping
         ):
             return updated_node
 
@@ -243,7 +242,7 @@ class AddImportsVisitor(ContextAwareTransformer):
         )
 
     def _split_module(
-        self, orig_module: libcst.Module, updated_module: libcst.Module
+            self, orig_module: libcst.Module, updated_module: libcst.Module
     ) -> Tuple[
         List[Union[libcst.SimpleStatementLine, libcst.BaseCompoundStatement]],
         List[Union[libcst.SimpleStatementLine, libcst.BaseCompoundStatement]],
@@ -254,19 +253,19 @@ class AddImportsVisitor(ContextAwareTransformer):
 
         # never insert an import before initial __strict__ flag
         if m.matches(
-            orig_module,
-            m.Module(
-                body=[
-                    m.SimpleStatementLine(
-                        body=[
-                            m.Assign(
-                                targets=[m.AssignTarget(target=m.Name("__strict__"))]
-                            )
-                        ]
-                    ),
-                    m.ZeroOrMore(),
-                ]
-            ),
+                orig_module,
+                m.Module(
+                    body=[
+                        m.SimpleStatementLine(
+                            body=[
+                                m.Assign(
+                                    targets=[m.AssignTarget(target=m.Name("__strict__"))]
+                                )
+                            ]
+                        ),
+                        m.ZeroOrMore(),
+                    ]
+                ),
         ):
             statement_before_import_location = import_add_location = 1
 
@@ -276,7 +275,7 @@ class AddImportsVisitor(ContextAwareTransformer):
         # change this assumption in this visitor, we will have to change this code.
         for i, statement in enumerate(orig_module.body):
             if m.matches(
-                statement, m.SimpleStatementLine(body=[m.Expr(value=m.SimpleString())])
+                    statement, m.SimpleStatementLine(body=[m.Expr(value=m.SimpleString())])
             ):
                 statement_before_import_location = import_add_location = 1
             elif isinstance(statement, libcst.SimpleStatementLine):
@@ -290,17 +289,17 @@ class AddImportsVisitor(ContextAwareTransformer):
             list(updated_module.body[:statement_before_import_location]),
             list(
                 updated_module.body[
-                    statement_before_import_location:import_add_location
+                statement_before_import_location:import_add_location
                 ]
             ),
             list(updated_module.body[import_add_location:]),
         )
 
     def _insert_empty_line(
-        self,
-        statements: List[
-            Union[libcst.SimpleStatementLine, libcst.BaseCompoundStatement]
-        ],
+            self,
+            statements: List[
+                Union[libcst.SimpleStatementLine, libcst.BaseCompoundStatement]
+            ],
     ) -> List[Union[libcst.SimpleStatementLine, libcst.BaseCompoundStatement]]:
         if len(statements) < 1:
             # No statements, nothing to add to
@@ -323,14 +322,14 @@ class AddImportsVisitor(ContextAwareTransformer):
         ]
 
     def leave_Module(
-        self, original_node: libcst.Module, updated_node: libcst.Module
+            self, original_node: libcst.Module, updated_node: libcst.Module
     ) -> libcst.Module:
         # Don't try to modify if we have nothing to do
         if (
-            not self.module_imports
-            and not self.module_mapping
-            and not self.module_aliases
-            and not self.alias_mapping
+                not self.module_imports
+                and not self.module_mapping
+                and not self.module_aliases
+                and not self.alias_mapping
         ):
             return updated_node
 
@@ -357,6 +356,37 @@ class AddImportsVisitor(ContextAwareTransformer):
             for module, aliases in module_and_alias_mapping.items()
         }
 
+        import_cycle_safe_module_names = [
+            'mypy_extensions',
+            'typing',
+            'typing_extensions',
+        ]
+        type_checking_cond_import = parse_statement(
+            f"from typing import TYPE_CHECKING",
+            config=updated_node.config_for_parsing,
+        )
+        type_checking_cond_statement = libcst.If(
+            test=libcst.Name("TYPE_CHECKING"),
+            body=libcst.IndentedBlock(
+                body=[
+                    parse_statement(
+                        f"from {module} import "
+                        + ", ".join(
+                            [
+                                obj if alias is None else f"{obj} as {alias}"
+                                for (obj, alias) in aliases
+                            ]
+                        ),
+                        config=updated_node.config_for_parsing,
+                    )
+                    for module, aliases in module_and_alias_mapping.items()
+                    if module != "__future__" and module not in import_cycle_safe_module_names
+                ],
+            ),
+        )
+        if not type_checking_cond_statement.body.body:
+            type_checking_cond_statement = libcst.EmptyLine()
+            type_checking_cond_import = libcst.EmptyLine()
         # import ptvsd; ptvsd.set_trace()
         # Now, add all of the imports we need!
         return updated_node.with_changes(
@@ -390,22 +420,22 @@ class AddImportsVisitor(ContextAwareTransformer):
                     )
                     for (module, asname) in self.module_aliases.items()
                 ],
+                # TODO: 可以进一步用 `from __future__ import annotations` 解决forward ref, 这里加也可以，用其他工具也可以
+                type_checking_cond_import,
+                type_checking_cond_statement,
                 *[
                     parse_statement(
-                        "if TYPE_CHECKING:\n"
-                        + (
-                            f"    from {module} import "
-                            + ", ".join(
-                                [
-                                    obj if alias is None else f"{obj} as {alias}"
-                                    for (obj, alias) in aliases
-                                ]
-                            )
+                        f"from {module} import "
+                        + ", ".join(
+                            [
+                                obj if alias is None else f"{obj} as {alias}"
+                                for (obj, alias) in aliases
+                            ]
                         ),
                         config=updated_node.config_for_parsing,
                     )
                     for module, aliases in module_and_alias_mapping.items()
-                    if module != "__future__"
+                    if module != "__future__" and module in import_cycle_safe_module_names
                 ],
                 *statements_after_imports,
             )

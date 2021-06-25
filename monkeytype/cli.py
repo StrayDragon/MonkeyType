@@ -37,6 +37,9 @@ from monkeytype.tracing import CallTrace
 from monkeytype.typing import NoOpRewriter
 from monkeytype.util import get_name_in_module
 
+from rich.traceback import install
+
+install()
 
 if TYPE_CHECKING:
     # This is not present in Python 3.6.1, so not safe for runtime import
@@ -139,7 +142,7 @@ class HandlerError(Exception):
 
 
 def apply_stub_using_libcst(
-    stub: str, source: str, overwrite_existing_annotations: bool
+        stub: str, source: str, overwrite_existing_annotations: bool
 ) -> str:
     try:
         stub_module = parse_module(stub)
@@ -305,7 +308,7 @@ qualname format.""")
         action='store_true',
         default=False,
         help='Print to stderr the numbers of traces stubs are based on'
-        )
+    )
     apply_parser.add_argument(
         "--ignore-existing-annotations",
         action="store_const",
@@ -335,7 +338,7 @@ qualname format.""")
         action='store_true',
         default=False,
         help='Print to stderr the numbers of traces stubs are based on'
-        )
+    )
     group = stub_parser.add_mutually_exclusive_group()
     group.add_argument(
         "--ignore-existing-annotations",
@@ -344,7 +347,7 @@ qualname format.""")
         default=ExistingAnnotationStrategy.REPLICATE,
         const=ExistingAnnotationStrategy.IGNORE,
         help='Ignore existing annotations and generate stubs only from traces.',
-        )
+    )
     group.add_argument(
         "--omit-existing-annotations",
         action='store_const',
@@ -352,13 +355,13 @@ qualname format.""")
         default=ExistingAnnotationStrategy.REPLICATE,
         const=ExistingAnnotationStrategy.OMIT,
         help='Omit from stub any existing annotations in source. Implied by --apply.',
-        )
+    )
     stub_parser.add_argument(
         "--diff",
         action='store_true',
         default=False,
         help='Compare stubs generated with and without considering existing annotations.',
-        )
+    )
     stub_parser.set_defaults(handler=print_stub_handler)
 
     list_modules_parser = subparsers.add_parser(
