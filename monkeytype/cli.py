@@ -39,7 +39,11 @@ from monkeytype.util import get_name_in_module
 
 from rich.traceback import install
 
-install()
+install(
+    show_locals=True,
+    indent_guides=False,
+    width=120,
+)
 
 if TYPE_CHECKING:
     # This is not present in Python 3.6.1, so not safe for runtime import
