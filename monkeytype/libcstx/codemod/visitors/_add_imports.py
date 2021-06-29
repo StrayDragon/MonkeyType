@@ -427,15 +427,14 @@ class AddImportsVisitor(ContextAwareTransformer):
                     parse_statement(
                         f"from {module} import "
                         + ", ".join(
-                            [
-                                obj if alias is None else f"{obj} as {alias}"
-                                for (obj, alias) in aliases
-                            ]
+                            [obj if alias is None else f"{obj} as {alias}" for (obj, alias) in aliases]
                         ),
                         config=updated_node.config_for_parsing,
                     )
                     for module, aliases in module_and_alias_mapping.items()
-                    if module != "__future__" and module in import_cycle_safe_module_names
+                    if module != "__future__"
+                    and module in import_cycle_safe_module_names
+                    and not module.startswith("monkeytype")
                 ],
                 *statements_after_imports,
             )
