@@ -301,12 +301,18 @@ class RenderAnnotation(GenericTypeRewriter[str]):
     """Render annotation recursively."""
 
     def make_anonymous_typed_dict(self, required_fields: Dict[str, str], optional_fields: Dict[str, str]) -> str:
-        raise Exception("Should not receive an anonymous TypedDict in RenderAnnotation,"
-                        f" but was called with required_fields={required_fields}, optional_fields={optional_fields}.")
+        e = Exception("Should not receive an anonymous TypedDict in RenderAnnotation,"
+                      f" but was called with required_fields={required_fields}, optional_fields={optional_fields}.")
+        # raise e
+        print(f"WARNING: {e}")
+        return 'dict'
 
     def make_builtin_typed_dict(self, name: str, annotations: Dict[str, str], total: bool) -> str:
-        raise Exception("Should not receive a TypedDict type in RenderAnnotation,"
-                        f" but was called with name={name}, annotations={annotations}, total={total}.")
+        e = Exception("Should not receive a TypedDict type in RenderAnnotation,"
+                      f" but was called with name={name}, annotations={annotations}, total={total}.")
+        # raise e
+        print(f"WARNING: {e}")
+        return 'dict'
 
     def generic_rewrite(self, typ: Any) -> str:
         if hasattr(typ, '__supertype__'):

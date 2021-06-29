@@ -42,7 +42,7 @@ from rich.traceback import install
 install(
     show_locals=True,
     indent_guides=False,
-    width=120,
+    width=220,
 )
 
 if TYPE_CHECKING:
